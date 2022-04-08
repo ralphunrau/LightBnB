@@ -104,8 +104,8 @@ exports.addUser = addUser;
     GROUP BY properties.id, reservations.id
     ORDER BY reservations.start_date
     LIMIT $2`, [guest_id, limit])
-    .then((res) => {
-      return res.rows
+    .then((result) => {
+      return result.rows
     })
     .catch((err) => {
       console.log(err.message);
@@ -164,7 +164,7 @@ exports.getAllReservations = getAllReservations;
   console.log(queryString, queryParams);
 
   return pool.query(queryString, queryParams)
-    .then((res) => res.rows);
+    .then((result) => result.rows);
 };
 
 
@@ -178,9 +178,38 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
+  /* const propertyId = Object.keys(properties).length + 1;
   property.id = propertyId;
   properties[propertyId] = property;
-  return Promise.resolve(property);
+  return Promise.resolve(property); */
+
+  return pool
+    .query(
+    `
+    INSERT INTO properties(
+      owner_id,
+      title,
+      description,
+      thumbnail_photo_url,
+      cover_photo_url,
+      cost_per_night,
+      street,
+      city,
+      province,
+      post_code,
+      country,
+      parking_spaces,
+      number_of_bathrooms,
+      number_of_bedrooms
+    ) VALUES (
+      '${property.owner_id}', '${property.title}', '${property.description}', '${property.thumbnail_photo_url}', '${property.cover_photo_url}', '${property.cost_per_night}', '${property.street}', '${property.city}', '${property.province}', '${property.post_code}', '${property.country}', '${property.parking_spaces}', '${property.number_of_bathrooms}', '${property.number_of_bedrooms}'
+    ) RETURNING *;
+    `)
+    .then((result) => {
+      return result.rows
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 }
 exports.addProperty = addProperty;
